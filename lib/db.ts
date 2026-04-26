@@ -15,6 +15,7 @@ import path from "path";
 import type { Category, MenuItem, MenuData, AdminStats } from "@/types/menu";
 import { seedCategories, seedItems } from "@/data/seed-menu";
 import { env } from "./env";
+import { getOptionalRequestContext } from "@cloudflare/next-on-pages";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -434,21 +435,16 @@ function createD1Provider(d1: D1Database): DbProvider {
 // Provider selector
 // ════════════════════════════════════════════════════════════════════════════
 
-type CFContextFn = { getCloudflareContext: <T>() => { env: T } };
-
 function tryGetD1(): D1Database | null {
   if (env.databaseProvider !== "d1") return null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require("@cloudflare/next-on-pages") as CFContextFn;
-    const ctx = getCloudflareContext<CloudflareEnv>();
-    return ctx.env.caffe54_menu_db;
-  } catch {
+  const ctx = getOptionalRequestContext();
+  if (!ctx) {
     if (process.env.NODE_ENV !== "test") {
       console.warn("[db] DATABASE_PROVIDER=d1 but CF context unavailable — using local JSON.");
     }
     return null;
   }
+  return ctx.env.caffe54_menu_db;
 }
 
 // Re-use a cached provider within the same request / module lifetime

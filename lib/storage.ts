@@ -15,6 +15,7 @@
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { env } from "./env";
+import { getOptionalRequestContext } from "@cloudflare/next-on-pages";
 
 export type UploadResult = {
   /** Public URL (absolute) or relative path for local uploads */
@@ -69,21 +70,16 @@ async function uploadR2(file: File, bucket: R2Bucket): Promise<UploadResult> {
 
 // ─── Provider selector ────────────────────────────────────────────────────────
 
-type CFContextFn = { getCloudflareContext: <T>() => { env: T } };
-
 function tryGetR2Bucket(): R2Bucket | null {
   if (env.storageProvider !== "r2") return null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require("@cloudflare/next-on-pages") as CFContextFn;
-    const ctx = getCloudflareContext<CloudflareEnv>();
-    return ctx.env.caffe54_menu_images;
-  } catch {
+  const ctx = getOptionalRequestContext();
+  if (!ctx) {
     if (process.env.NODE_ENV !== "test") {
       console.warn("[storage] STORAGE_PROVIDER=r2 but CF context unavailable — using local.");
     }
     return null;
   }
+  return ctx.env.caffe54_menu_images;
 }
 
 // ─── Public interface ─────────────────────────────────────────────────────────
