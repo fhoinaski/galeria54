@@ -17,9 +17,10 @@ export type MenuItem = {
   price: number;
   currency: "BRL";
   image?: string;
+  badge?: string;
   tags?: string[];
   featured?: boolean;
   available: boolean;
   allergens?: string[];
-  pairings?: string[]; // IDs of related items
+  pairings?: string[];
 };

@@ -1,14 +1,18 @@
 export function Footer() {
   return (
-    <footer className="bg-olive-700 text-warm-white/60 py-8 px-4 text-center mt-12 border-t border-olive-500/30">
-      <div className="max-w-7xl mx-auto flex flex-col items-center">
-        <h2 className="font-serif text-xl text-warm-white font-bold mb-4 tracking-widest">CAFFÈ 54</h2>
-        <p className="text-sm mb-6 max-w-xs leading-relaxed">
-          Sabor em detalhes, café de verdade.
+    <footer className="bg-olive-700 text-warm-white/60 py-10 px-4 text-center mt-4 border-t border-olive-500/30">
+      <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
+        <div className="font-serif text-[22px] text-warm-white tracking-[0.14em]">
+          <span className="italic">Caffè</span>
+          <span className="ml-1.5 font-semibold not-italic">54</span>
+        </div>
+        <p className="text-[13px] text-warm-white/50 max-w-xs leading-relaxed">
+          Alma europeia. Coração praiano.
         </p>
-        <div className="text-xs space-y-2">
+        <div className="w-12 h-px bg-warm-white/20" />
+        <div className="text-[11px] space-y-1 text-warm-white/35">
           <p>© {new Date().getFullYear()} Caffè 54. Todos os direitos reservados.</p>
-          <p className="text-warm-white/40">Powered by AI Studio</p>
+          <p>Florianópolis, Santa Catarina.</p>
         </div>
       </div>
     </footer>
