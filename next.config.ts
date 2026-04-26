@@ -15,8 +15,20 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
         port: '',
-        pathname: '/**', // This allows any path under the hostname
+        pathname: '/**',
       },
+      // Cloudflare R2 public bucket (set R2_PUBLIC_URL in prod)
+      ...(process.env.R2_PUBLIC_URL
+        ? [{
+            protocol: 'https' as const,
+            hostname: new URL(process.env.R2_PUBLIC_URL).hostname,
+            pathname: '/**',
+          }]
+        : []),
+    ],
+    // Local uploads served from /public/uploads/
+    localPatterns: [
+      { pathname: '/uploads/**' },
     ],
   },
   output: 'standalone',
