@@ -1,6 +1,9 @@
 /**
  * Centralised, validated environment configuration.
  * Import `env` instead of reading process.env directly.
+ *
+ * Cloudflare D1 and R2 are accessed via CF Workers bindings (not env vars).
+ * See worker-configuration.d.ts and lib/db.ts / lib/storage.ts.
  */
 
 function get(key: string, fallback?: string): string {
@@ -36,19 +39,13 @@ export const env = {
   // Admin
   adminAccessToken: get("ADMIN_ACCESS_TOKEN", "admin123"),
 
-  // Database
+  // Database — actual data access is via CF D1 binding (see lib/db.ts)
   databaseProvider: get("DATABASE_PROVIDER", "local") as "local" | "d1",
-  databaseUrl:      get("DATABASE_URL", ""),
 
-  // Storage
+  // Storage — actual uploads go through CF R2 binding (see lib/storage.ts)
   storageProvider: get("STORAGE_PROVIDER", "local") as "local" | "r2",
-  r2: {
-    accountId:       get("R2_ACCOUNT_ID",        ""),
-    accessKeyId:     get("R2_ACCESS_KEY_ID",     ""),
-    secretAccessKey: get("R2_SECRET_ACCESS_KEY", ""),
-    bucketName:      get("R2_BUCKET_NAME",       ""),
-    publicUrl:       get("R2_PUBLIC_URL",        ""),
-  },
+  r2PublicUrl:     get("R2_PUBLIC_URL", ""),   // e.g. https://pub-xxx.r2.dev
+  r2BucketName:    get("R2_BUCKET_NAME", "caffe54-menu-images"),
 
   // i18n
   defaultLanguage:    get("NEXT_PUBLIC_DEFAULT_LANGUAGE",    "pt"),
@@ -67,6 +64,6 @@ export const env = {
     .split(",")
     .map(s => s.trim()),
 
-  // Cache
+  // Cache (used for HTTP Cache-Control headers)
   cacheTtlSeconds: getNumber("CACHE_TTL_SECONDS", 60),
 } as const;

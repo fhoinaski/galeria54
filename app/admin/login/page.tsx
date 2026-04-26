@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ token: token.trim() }),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json() as { error?: string };
         throw new Error(data.error || "Token inválido");
       }
       router.push("/admin");

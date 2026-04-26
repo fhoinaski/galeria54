@@ -19,11 +19,11 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!(await verifyAdminRequest())) return unauthorizedResponse();
   try {
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
     const { valid, errors } = validateMenuItem(body);
     if (!valid) return NextResponse.json({ errors }, { status: 422 });
 
-    const item = await menuRepository.createMenuItem(body as CreateMenuItemInput);
+    const item = await menuRepository.createMenuItem(body as unknown as CreateMenuItemInput);
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

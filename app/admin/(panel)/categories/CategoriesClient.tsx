@@ -22,10 +22,10 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
       body: JSON.stringify(data),
     });
     if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
+      const d = await res.json().catch(() => ({})) as { error?: string };
       throw new Error(d.error || "Erro ao salvar");
     }
-    const { category } = await res.json();
+    const { category } = await res.json() as { category: Category };
     if (id) {
       setCategories(prev => prev.map(c => c.id === id ? category : c));
     } else {
@@ -51,7 +51,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
     if (!confirm(`Excluir a categoria "${cat?.name.pt}"? Esta ação não pode ser desfeita.`)) return;
     const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
     if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
+      const d = await res.json().catch(() => ({})) as { error?: string };
       alert(d.error || "Erro ao excluir");
       return;
     }

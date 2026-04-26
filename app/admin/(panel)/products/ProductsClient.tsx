@@ -14,14 +14,14 @@ export function ProductsClient({ initialItems, categories }: ProductsClientProps
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
 
-  async function mutate(url: string, method: string, onSuccess: (data: unknown) => void) {
+  async function mutate(url: string, method: string, onSuccess: (data: Record<string, unknown>) => void) {
     const res = await fetch(url, { method });
     if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
+      const d = await res.json().catch(() => ({})) as { error?: string };
       alert(d.error || "Erro ao processar");
       return;
     }
-    const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({})) as Record<string, unknown>;
     onSuccess(data);
     router.refresh();
   }
@@ -52,7 +52,7 @@ export function ProductsClient({ initialItems, categories }: ProductsClientProps
 
   const handleDuplicate = useCallback(async (id: string) => {
     await mutate(`/api/admin/products/${id}?action=duplicate`, "POST", (data) => {
-      const dup = (data as { item: MenuItem }).item;
+      const dup = data.item as MenuItem | undefined;
       if (dup) setItems(prev => [...prev, dup]);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps

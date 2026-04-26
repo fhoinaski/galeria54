@@ -18,8 +18,8 @@ export async function PATCH(request: Request, { params }: Params) {
   if (!(await verifyAdminRequest())) return unauthorizedResponse();
   const { id } = await params;
   try {
-    const body = await request.json();
-    const item = await menuRepository.updateMenuItem(id, body);
+    const body = await request.json() as Record<string, unknown>;
+    const item = await menuRepository.updateMenuItem(id, body as Parameters<typeof menuRepository.updateMenuItem>[1]);
     return NextResponse.json(item);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

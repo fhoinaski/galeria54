@@ -38,9 +38,9 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
       const fd = new FormData();
       fd.append("file", file);
       const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
+      const data = await res.json() as { error?: string; url?: string };
       if (!res.ok) throw new Error(data.error || "Upload falhou");
-      onChange(data.url);
+      onChange(data.url ?? "");
     } catch (err) {
       setError(String(err));
     } finally {

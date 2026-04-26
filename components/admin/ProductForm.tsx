@@ -109,7 +109,7 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json() as { error?: string };
         throw new Error(data.error || "Erro ao salvar");
       }
       setToast(isEdit ? "Produto atualizado!" : "Produto criado!");
