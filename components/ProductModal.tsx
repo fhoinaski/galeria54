@@ -47,9 +47,9 @@ export function ProductModal({ item, language, onClose, allMenuItems }: ProductM
             <X className="w-5 h-5" />
           </button>
 
-          <div className="overflow-y-auto overflow-x-hidden p-6 sm:p-8 pt-10">
+          <div className="overflow-y-auto overflow-x-hidden p-6 sm:p-8 pt-8">
             {item.image && (
-              <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-6 bg-cream shadow-inner">
+              <div className="relative w-full h-56 rounded-[14px] overflow-hidden mb-6 bg-[#F1ECDC] shadow-inner">
                 <Image
                   src={item.image}
                   alt={item.name[language]}
@@ -60,39 +60,45 @@ export function ProductModal({ item, language, onClose, allMenuItems }: ProductM
               </div>
             )}
 
-            <div className="flex justify-between items-start gap-4 mb-2">
-              <h2 className="font-serif text-2xl font-semibold text-text-main leading-tight">
+            <div className="flex justify-between items-baseline gap-4 mb-2">
+              <h2 className="font-serif text-[28px] font-semibold text-text-main leading-tight flex-1">
                 {item.name[language]}
               </h2>
-              <span className="font-medium text-xl text-olive-700 whitespace-nowrap">
-                {formatCurrency(item.price, item.currency)}
-              </span>
+              <div className="flex items-baseline gap-1 shrink-0">
+                 <span className="text-[12px] text-text-main/60 tracking-[0.1em]">R$</span>
+                 <span className="font-serif text-[26px] font-medium text-olive-700">
+                   {formatCurrency(item.price, item.currency).replace('R$', '').trim()}
+                 </span>
+              </div>
             </div>
             
             {!isAvailable && (
-              <span className="inline-block mt-1 mb-4 text-xs font-semibold text-red-800 bg-red-100 px-3 py-1 rounded-full">
+              <span className="inline-block mt-1 mb-4 text-[10px] tracking-[0.14em] uppercase font-semibold text-red-800 bg-red-100 px-3 py-1.5 rounded-full">
                 {t.unavailable}
               </span>
             )}
 
-            <p className="text-text-main/80 text-base leading-relaxed mb-6">
+            <p className="text-text-main/80 text-[14px] leading-[1.6] mb-8">
               {item.description[language]}
             </p>
 
             {/* Tags / Allergens */}
             {(item.tags?.length || item.allergens?.length) ? (
               <div className="mb-8">
-                <h4 className="text-xs uppercase tracking-wider text-olive-500 font-semibold mb-3">
-                  {t.ingredientsAndDetails}
-                </h4>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-5 h-px bg-gold" />
+                  <span className="text-[10px] tracking-[0.28em] uppercase text-gold font-semibold">
+                    {t.ingredientsAndDetails}
+                  </span>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {item.tags?.map(tag => (
-                    <span key={tag} className="px-3 py-1.5 bg-olive-700/5 text-olive-700 rounded-lg text-sm font-medium flex items-center gap-1.5 border border-olive-700/10">
-                      <Leaf className="w-3.5 h-3.5" /> {tag}
+                    <span key={tag} className="px-3 py-1.5 bg-[#F1ECDC] text-text-main rounded-full text-[11px] font-medium border border-text-main/5">
+                      {tag}
                     </span>
                   ))}
                   {item.allergens?.map(allergen => (
-                    <span key={allergen} className="px-3 py-1.5 bg-orange-50 text-orange-800 rounded-lg text-sm font-medium border border-orange-200/50">
+                    <span key={allergen} className="px-3 py-1.5 bg-orange-50 text-orange-800 rounded-full text-[11px] font-medium border border-orange-200/50">
                       Cuidado: {allergen}
                     </span>
                   ))}
@@ -102,27 +108,39 @@ export function ProductModal({ item, language, onClose, allMenuItems }: ProductM
 
             {/* Pairings */}
             {pairedItems.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-beige/40">
-                <h4 className="text-xs uppercase tracking-wider text-olive-500 font-semibold mb-4">
-                  {t.pairings}
-                </h4>
-                <div className="space-y-3">
+              <div className="mt-8 pt-6 border-t border-text-main/5">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-5 h-px bg-gold" />
+                  <span className="text-[10px] tracking-[0.28em] uppercase text-gold font-semibold">
+                    {t.pairings}
+                  </span>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {pairedItems.map(pairedItem => (
-                    <div key={pairedItem.id} className="flex items-center gap-3 p-3 rounded-xl bg-cream border border-beige/50">
+                    <div key={pairedItem.id} className="w-[130px] shrink-0 rounded-[12px] bg-white border border-text-main/10 overflow-hidden flex flex-col">
                        {pairedItem.image && (
-                         <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                           <Image src={pairedItem.image} alt="" fill referrerPolicy="no-referrer" className="object-cover" />
+                         <div className="relative w-full h-[78px] bg-[#F1ECDC] overflow-hidden shrink-0">
+                           <Image src={pairedItem.image} alt="" fill referrerPolicy="no-referrer" className="object-cover" sizes="130px" />
                          </div>
                        )}
-                       <div>
-                         <h5 className="font-medium text-sm text-text-main">{pairedItem.name[language]}</h5>
-                         <p className="text-xs text-text-main/60">{formatCurrency(pairedItem.price, pairedItem.currency)}</p>
+                       <div className="p-3">
+                         <h5 className="font-serif font-semibold text-[14px] leading-[1.15] text-text-main mb-1 line-clamp-2">{pairedItem.name[language]}</h5>
+                         <p className="text-[12px] font-serif italic text-olive-700">{formatCurrency(pairedItem.price, pairedItem.currency)}</p>
                        </div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
+            
+            <div className="mt-8">
+              <button 
+                onClick={onClose}
+                className="w-full bg-olive-700 text-[#FBF6E9] py-3.5 rounded-xl font-medium tracking-[0.1em] text-[13px] uppercase"
+              >
+                Gostei desse
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
