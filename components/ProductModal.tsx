@@ -1,4 +1,7 @@
-import { X, WheatOff, Milk, Leaf } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { X, BellRing, Heart, ImageOff } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import type { Language, MenuItem } from "@/types/menu";
@@ -9,12 +12,15 @@ interface ProductModalProps {
   item: MenuItem | null;
   language: Language;
   onClose: () => void;
+  onCallWaiter: () => void;
   allMenuItems: MenuItem[];
 }
 
-export function ProductModal({ item, language, onClose, allMenuItems }: ProductModalProps) {
+export function ProductModal({ item, language, onClose, onCallWaiter, allMenuItems }: ProductModalProps) {
+  const [liked, setLiked] = useState(false);
+
   if (!item) return null;
-  
+
   const t = translations[language];
   const isAvailable = item.available;
 
@@ -24,126 +30,200 @@ export function ProductModal({ item, language, onClose, allMenuItems }: ProductM
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <motion.div 
+      <div
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-label={item.name[language]}
+      >
+        {/* Backdrop */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="absolute inset-0 bg-text-main/40 backdrop-blur-sm"
+          className="absolute inset-0 bg-[#2F2F2F]/50 backdrop-blur-sm"
         />
-        
-        <motion.div 
-          initial={{ y: 50, opacity: 0, scale: 0.95 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: 50, opacity: 0, scale: 0.95 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-lg bg-warm-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+
+        {/* Sheet / Modal */}
+        <motion.div
+          initial={{ y: "100%", opacity: 0.6 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100%", opacity: 0 }}
+          transition={{ type: "spring", damping: 28, stiffness: 320 }}
+          className="relative w-full sm:max-w-lg bg-warm-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]"
         >
-          <button 
+          {/* Handle bar (mobile) */}
+          <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 rounded-full bg-[#2F2F2F]/15" />
+          </div>
+
+          {/* Close button */}
+          <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-warm-white/80 hover:bg-warm-white text-olive-700 rounded-full shadow-sm backdrop-blur transition-colors"
+            aria-label={t.closeModal}
+            className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center bg-[#2F2F2F]/8 hover:bg-[#2F2F2F]/14 text-text-main rounded-full transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4.5 h-4.5" />
           </button>
 
-          <div className="overflow-y-auto overflow-x-hidden p-6 sm:p-8 pt-8">
-            {item.image && (
-              <div className="relative w-full h-56 rounded-[14px] overflow-hidden mb-6 bg-[#F1ECDC] shadow-inner">
+          {/* Scrollable content */}
+          <div className="overflow-y-auto flex-1 overscroll-contain">
+            {/* Product image */}
+            {item.image ? (
+              <div className="relative w-full h-52 sm:h-64 bg-[#F1ECDC] shrink-0">
                 <Image
                   src={item.image}
                   alt={item.name[language]}
                   fill
                   referrerPolicy="no-referrer"
-                  className="object-cover"
+                  className={`object-cover ${!isAvailable ? "grayscale" : ""}`}
+                  sizes="(max-width: 640px) 100vw, 512px"
+                  priority
                 />
+                {!isAvailable && (
+                  <div className="absolute inset-0 bg-[#2F2F2F]/40 flex items-center justify-center">
+                    <span className="bg-white/95 text-[#2F2F2F] text-[11px] font-bold tracking-[0.12em] uppercase px-4 py-2 rounded-full shadow">
+                      {t.unavailableShort}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="w-full h-40 bg-[#F1ECDC] flex items-center justify-center shrink-0">
+                <ImageOff className="w-8 h-8 text-[#2F2F2F]/20" />
               </div>
             )}
 
-            <div className="flex justify-between items-baseline gap-4 mb-2">
-              <h2 className="font-serif text-[28px] font-semibold text-text-main leading-tight flex-1">
-                {item.name[language]}
-              </h2>
-              <div className="flex items-baseline gap-1 shrink-0">
-                 <span className="text-[12px] text-text-main/60 tracking-[0.1em]">R$</span>
-                 <span className="font-serif text-[26px] font-medium text-olive-700">
-                   {formatCurrency(item.price, item.currency).replace('R$', '').trim()}
-                 </span>
-              </div>
-            </div>
-            
-            {!isAvailable && (
-              <span className="inline-block mt-1 mb-4 text-[10px] tracking-[0.14em] uppercase font-semibold text-red-800 bg-red-100 px-3 py-1.5 rounded-full">
-                {t.unavailable}
-              </span>
-            )}
-
-            <p className="text-text-main/80 text-[14px] leading-[1.6] mb-8">
-              {item.description[language]}
-            </p>
-
-            {/* Tags / Allergens */}
-            {(item.tags?.length || item.allergens?.length) ? (
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-5 h-px bg-gold" />
-                  <span className="text-[10px] tracking-[0.28em] uppercase text-gold font-semibold">
-                    {t.ingredientsAndDetails}
+            <div className="p-5 sm:p-6 flex flex-col gap-5">
+              {/* Name + Price */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  {item.badge && (
+                    <span className="inline-block text-[10px] font-bold tracking-[0.12em] uppercase text-gold mb-1.5">
+                      {item.badge}
+                    </span>
+                  )}
+                  <h2 className="font-serif text-[26px] font-semibold text-text-main leading-tight">
+                    {item.name[language]}
+                  </h2>
+                </div>
+                <div className="flex items-baseline gap-0.5 shrink-0">
+                  <span className="text-[11px] text-text-main/50 tracking-[0.08em]">R$</span>
+                  <span className="font-serif text-[28px] font-semibold text-olive-700 leading-none">
+                    {formatCurrency(item.price, item.currency).replace("R$", "").trim()}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {item.tags?.map(tag => (
-                    <span key={tag} className="px-3 py-1.5 bg-[#F1ECDC] text-text-main rounded-full text-[11px] font-medium border border-text-main/5">
-                      {tag}
-                    </span>
-                  ))}
-                  {item.allergens?.map(allergen => (
-                    <span key={allergen} className="px-3 py-1.5 bg-orange-50 text-orange-800 rounded-full text-[11px] font-medium border border-orange-200/50">
-                      Cuidado: {allergen}
-                    </span>
-                  ))}
-                </div>
               </div>
-            ) : null}
 
-            {/* Pairings */}
-            {pairedItems.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-text-main/5">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-5 h-px bg-gold" />
-                  <span className="text-[10px] tracking-[0.28em] uppercase text-gold font-semibold">
-                    {t.pairings}
-                  </span>
+              {/* Description */}
+              <p className="text-text-main/75 text-[14px] leading-[1.7]">
+                {item.description[language]}
+              </p>
+
+              {/* Tags + Allergens */}
+              {(item.tags?.length || item.allergens?.length) ? (
+                <div>
+                  <SectionLabel label={t.ingredientsAndDetails} />
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {item.tags?.map(tag => (
+                      <span key={tag} className="px-3 py-1.5 bg-[#F1ECDC] text-text-main rounded-full text-[11.5px] font-medium border border-text-main/6">
+                        {tag}
+                      </span>
+                    ))}
+                    {item.allergens?.map(allergen => (
+                      <span key={allergen} className="px-3 py-1.5 bg-orange-50 text-orange-800 rounded-full text-[11.5px] font-medium border border-orange-200/60">
+                        ⚠ {allergen}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                  {pairedItems.map(pairedItem => (
-                    <div key={pairedItem.id} className="w-[130px] shrink-0 rounded-[12px] bg-white border border-text-main/10 overflow-hidden flex flex-col">
-                       {pairedItem.image && (
-                         <div className="relative w-full h-[78px] bg-[#F1ECDC] overflow-hidden shrink-0">
-                           <Image src={pairedItem.image} alt="" fill referrerPolicy="no-referrer" className="object-cover" sizes="130px" />
-                         </div>
-                       )}
-                       <div className="p-3">
-                         <h5 className="font-serif font-semibold text-[14px] leading-[1.15] text-text-main mb-1 line-clamp-2">{pairedItem.name[language]}</h5>
-                         <p className="text-[12px] font-serif italic text-olive-700">{formatCurrency(pairedItem.price, pairedItem.currency)}</p>
-                       </div>
-                    </div>
-                  ))}
+              ) : null}
+
+              {/* Pairings */}
+              {pairedItems.length > 0 && (
+                <div>
+                  <SectionLabel label={t.pairings} />
+                  <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 mt-3 -mx-1 px-1 snap-x">
+                    {pairedItems.map(paired => (
+                      <PairingCard key={paired.id} item={paired} language={language} />
+                    ))}
+                  </div>
                 </div>
+              )}
+
+              {/* CTA buttons */}
+              <div className="flex flex-col gap-3 pt-1 pb-2">
+                <button
+                  onClick={() => setLiked(prev => !prev)}
+                  className={`
+                    flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-[14px] tracking-wide transition-all
+                    ${liked
+                      ? "bg-olive-700 text-warm-white"
+                      : "bg-olive-700 text-warm-white hover:bg-olive-700/90 active:scale-[0.98]"
+                    }
+                  `}
+                  aria-pressed={liked}
+                >
+                  <Heart className={`w-4 h-4 transition-all ${liked ? "fill-warm-white scale-110" : ""}`} />
+                  {liked ? `${t.liked} ✓` : t.liked}
+                </button>
+
+                <button
+                  onClick={() => { onCallWaiter(); onClose(); }}
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-[14px] tracking-wide border-2 border-olive-700 text-olive-700 hover:bg-olive-700/5 active:scale-[0.98] transition-all"
+                >
+                  <BellRing className="w-4 h-4" />
+                  {t.callWaiter}
+                </button>
               </div>
-            )}
-            
-            <div className="mt-8">
-              <button 
-                onClick={onClose}
-                className="w-full bg-olive-700 text-[#FBF6E9] py-3.5 rounded-xl font-medium tracking-[0.1em] text-[13px] uppercase"
-              >
-                Gostei desse
-              </button>
             </div>
           </div>
         </motion.div>
       </div>
     </AnimatePresence>
+  );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-5 h-px bg-gold" />
+      <span className="text-[10px] tracking-[0.26em] uppercase text-gold font-semibold">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function PairingCard({ item, language }: { item: MenuItem; language: Language }) {
+  return (
+    <div className="snap-start shrink-0 w-[120px] rounded-xl bg-white border border-[#2F2F2F]/8 overflow-hidden flex flex-col">
+      {item.image ? (
+        <div className="relative w-full h-[72px] bg-[#F1ECDC] overflow-hidden">
+          <Image
+            src={item.image}
+            alt=""
+            fill
+            referrerPolicy="no-referrer"
+            className="object-cover"
+            sizes="120px"
+          />
+        </div>
+      ) : (
+        <div className="w-full h-[72px] bg-[#F1ECDC] flex items-center justify-center">
+          <ImageOff className="w-5 h-5 text-[#2F2F2F]/20" />
+        </div>
+      )}
+      <div className="p-2.5">
+        <h5 className="font-serif font-semibold text-[13px] leading-tight text-text-main line-clamp-2">
+          {item.name[language]}
+        </h5>
+        <p className="text-[11px] font-serif italic text-olive-700 mt-1">
+          {formatCurrency(item.price, item.currency)}
+        </p>
+      </div>
+    </div>
   );
 }
