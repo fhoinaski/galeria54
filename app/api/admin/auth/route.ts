@@ -3,7 +3,7 @@ import { env } from "@/lib/env";
 
 export async function POST(request: Request) {
   try {
-    const { token } = await request.json();
+    const { token } = await request.json() as { token?: string };
 
     if (!token || token !== env.adminAccessToken) {
       return NextResponse.json({ error: "Token inválido" }, { status: 401 });

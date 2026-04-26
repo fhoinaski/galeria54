@@ -20,15 +20,15 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!(await verifyAdminRequest())) return unauthorizedResponse();
   try {
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
     // Auto-generate slug from PT name if not provided
-    if (!body.slug && body.name?.pt) {
-      body.slug = slugify(body.name.pt);
+    if (!body.slug && (body.name as Record<string,string> | undefined)?.pt) {
+      body.slug = slugify((body.name as Record<string,string>).pt);
     }
     const { valid, errors } = validateCategory(body);
     if (!valid) return NextResponse.json({ errors }, { status: 422 });
 
-    const category = await menuRepository.createCategory(body as CreateCategoryInput);
+    const category = await menuRepository.createCategory(body as unknown as CreateCategoryInput);
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

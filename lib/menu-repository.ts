@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { getDbProvider } from "./db";
 import { slugify } from "./slugify";
 import type {
   Category,
@@ -22,26 +22,23 @@ function shortId(): string {
 // ─── Categories ───────────────────────────────────────────────────────────────
 
 async function getCategories(): Promise<Category[]> {
-  const data = await db.read();
-  return [...data.categories].sort((a, b) => a.order - b.order);
+  return getDbProvider().listCategories();
 }
 
 async function getActiveCategories(): Promise<Category[]> {
-  const categories = await getCategories();
-  return categories.filter(c => c.active);
+  const all = await getCategories();
+  return all.filter(c => c.active);
 }
 
 async function getCategoryById(id: string): Promise<Category | null> {
-  const data = await db.read();
-  return data.categories.find(c => c.id === id) ?? null;
+  return getDbProvider().getCategory(id);
 }
 
 async function createCategory(input: CreateCategoryInput): Promise<Category> {
-  const data = await db.read();
+  const db = getDbProvider();
   const id = input.slug || slugify(input.name.pt);
-  if (data.categories.some(c => c.id === id)) {
-    throw new Error(`Category with slug "${id}" already exists.`);
-  }
+  const existing = await db.getCategory(id);
+  if (existing) throw new Error(`Category with slug "${id}" already exists.`);
   const category: Category = {
     ...input,
     id,
@@ -49,58 +46,36 @@ async function createCategory(input: CreateCategoryInput): Promise<Category> {
     createdAt: now(),
     updatedAt: now(),
   };
-  data.categories.push(category);
-  await db.write(data);
-  return category;
+  return db.createCategory(category);
 }
 
 async function updateCategory(id: string, input: UpdateCategoryInput): Promise<Category> {
-  const data = await db.read();
-  const idx = data.categories.findIndex(c => c.id === id);
-  if (idx === -1) throw new Error(`Category "${id}" not found.`);
-  const updated: Category = {
-    ...data.categories[idx],
-    ...input,
-    id,
-    updatedAt: now(),
-  };
-  data.categories[idx] = updated;
-  await db.write(data);
-  return updated;
+  const db = getDbProvider();
+  const existing = await db.getCategory(id);
+  if (!existing) throw new Error(`Category "${id}" not found.`);
+  return db.updateCategory(id, input);
 }
 
 async function deleteCategory(id: string): Promise<void> {
-  const data = await db.read();
-  const hasItems = data.items.some(i => i.categoryId === id);
+  const db = getDbProvider();
+  const hasItems = await db.categoryHasItems(id);
   if (hasItems) {
     throw new Error("Não é possível excluir uma categoria com produtos associados.");
   }
-  data.categories = data.categories.filter(c => c.id !== id);
-  await db.write(data);
+  await db.deleteCategory(id);
 }
 
 // ─── Menu items ───────────────────────────────────────────────────────────────
 
 async function getMenuItems(): Promise<MenuItem[]> {
-  const data = await db.read();
-  return [...data.items].sort((a, b) => {
-    if (a.categoryId !== b.categoryId) return 0;
-    return a.order - b.order;
-  });
-}
-
-async function getItemsByCategory(categoryId: string): Promise<MenuItem[]> {
-  const items = await getMenuItems();
-  return items.filter(i => i.categoryId === categoryId);
+  return getDbProvider().listItems();
 }
 
 async function getMenuItemById(id: string): Promise<MenuItem | null> {
-  const data = await db.read();
-  return data.items.find(i => i.id === id) ?? null;
+  return getDbProvider().getItem(id);
 }
 
 async function createMenuItem(input: CreateMenuItemInput): Promise<MenuItem> {
-  const data = await db.read();
   const id = `${slugify(input.name)}-${shortId()}`;
   const item: MenuItem = {
     ...input,
@@ -108,40 +83,21 @@ async function createMenuItem(input: CreateMenuItemInput): Promise<MenuItem> {
     createdAt: now(),
     updatedAt: now(),
   };
-  data.items.push(item);
-  await db.write(data);
-  return item;
+  return getDbProvider().createItem(item);
 }
 
 async function updateMenuItem(id: string, input: UpdateMenuItemInput): Promise<MenuItem> {
-  const data = await db.read();
-  const idx = data.items.findIndex(i => i.id === id);
-  if (idx === -1) throw new Error(`Item "${id}" not found.`);
-  const updated: MenuItem = {
-    ...data.items[idx],
-    ...input,
-    id,
-    updatedAt: now(),
-  };
-  data.items[idx] = updated;
-  await db.write(data);
-  return updated;
+  const existing = await getDbProvider().getItem(id);
+  if (!existing) throw new Error(`Item "${id}" not found.`);
+  return getDbProvider().updateItem(id, input);
 }
 
 async function deleteMenuItem(id: string): Promise<void> {
-  const data = await db.read();
-  data.items = data.items.filter(i => i.id !== id);
-  // Remove from pairings of other items
-  data.items = data.items.map(i => ({
-    ...i,
-    pairings: i.pairings.filter(p => p !== id),
-  }));
-  await db.write(data);
+  return getDbProvider().deleteItem(id);
 }
 
 async function duplicateMenuItem(id: string): Promise<MenuItem> {
-  const data = await db.read();
-  const original = data.items.find(i => i.id === id);
+  const original = await getDbProvider().getItem(id);
   if (!original) throw new Error(`Item "${id}" not found.`);
   const newId = `${slugify(original.name)}-${shortId()}`;
   const copy: MenuItem = {
@@ -153,37 +109,29 @@ async function duplicateMenuItem(id: string): Promise<MenuItem> {
     createdAt: now(),
     updatedAt: now(),
   };
-  data.items.push(copy);
-  await db.write(data);
-  return copy;
+  return getDbProvider().createItem(copy);
 }
 
 // ─── Aggregates ───────────────────────────────────────────────────────────────
 
 async function getMenuData(): Promise<MenuData> {
-  const data = await db.read();
-  return {
-    categories: [...data.categories].sort((a, b) => a.order - b.order),
-    items: [...data.items].sort((a, b) => a.order - b.order),
-  };
+  const { categories, items } = await getDbProvider().getMenuData();
+  return { categories, items };
+}
+
+async function getMenuDataWithMeta(): Promise<MenuData & { updatedAt: string }> {
+  return getDbProvider().getMenuData();
 }
 
 async function getAdminStats(): Promise<AdminStats> {
-  const data = await db.read();
-  return {
-    totalProducts: data.items.length,
-    availableProducts: data.items.filter(i => i.available).length,
-    unavailableProducts: data.items.filter(i => !i.available).length,
-    activeCategories: data.categories.filter(c => c.active).length,
-    featuredProducts: data.items.filter(i => i.featured).length,
-    lastUpdated: data.meta.updatedAt,
-  };
+  return getDbProvider().getStats();
 }
 
 // ─── Exported repository ──────────────────────────────────────────────────────
 
 export const menuRepository = {
   getMenuData,
+  getMenuDataWithMeta,
   getCategories,
   getActiveCategories,
   getCategoryById,
@@ -191,7 +139,6 @@ export const menuRepository = {
   updateCategory,
   deleteCategory,
   getMenuItems,
-  getItemsByCategory,
   getMenuItemById,
   createMenuItem,
   updateMenuItem,
