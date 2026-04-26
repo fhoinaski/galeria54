@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight, ImageOff } from "lucide-react";
 import type { Language, MenuItem } from "@/types/menu";
 import { translations } from "@/utils/translations";
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/lib/currency";
 
 interface ProductCardProps {
   item: MenuItem;
@@ -32,6 +32,7 @@ function BadgeChip({ badge }: { badge: string }) {
 export function ProductCard({ item, language, onClick }: ProductCardProps) {
   const t = translations[language];
   const isAvailable = item.available;
+  const badge = item.badge?.[language];
 
   return (
     <article
@@ -41,14 +42,14 @@ export function ProductCard({ item, language, onClick }: ProductCardProps) {
         shadow-sm hover:shadow-md transition-all duration-300
         ${isAvailable ? "cursor-pointer hover:-translate-y-0.5" : "opacity-75 cursor-default"}
       `}
-      aria-label={item.name[language]}
+      aria-label={item.name}
     >
       {/* Image area */}
       <div className="relative w-full aspect-[4/3] bg-[#F1ECDC] overflow-hidden">
-        {item.image ? (
+        {item.imageUrl ? (
           <Image
-            src={item.image}
-            alt={item.name[language]}
+            src={item.imageUrl}
+            alt={item.name}
             fill
             referrerPolicy="no-referrer"
             className={`object-cover transition-transform duration-500 ${
@@ -72,9 +73,9 @@ export function ProductCard({ item, language, onClick }: ProductCardProps) {
         )}
 
         {/* Badge overlay */}
-        {item.badge && isAvailable && (
+        {badge && isAvailable && (
           <div className="absolute top-2.5 left-2.5">
-            <BadgeChip badge={item.badge} />
+            <BadgeChip badge={badge} />
           </div>
         )}
       </div>
@@ -82,7 +83,7 @@ export function ProductCard({ item, language, onClick }: ProductCardProps) {
       {/* Content */}
       <div className="flex flex-col flex-1 p-4 gap-2">
         <h3 className="font-serif text-[17px] font-semibold text-text-main leading-tight line-clamp-1 group-hover:text-olive-700 transition-colors">
-          {item.name[language]}
+          {item.name}
         </h3>
 
         <p className="text-[12.5px] text-text-main/65 leading-[1.5] line-clamp-2 flex-1">
@@ -94,7 +95,7 @@ export function ProductCard({ item, language, onClick }: ProductCardProps) {
           <div className="flex items-baseline gap-0.5">
             <span className="text-[10px] text-text-main/50 tracking-[0.08em] font-medium">R$</span>
             <span className="font-serif text-[22px] font-semibold text-olive-700 leading-none">
-              {formatCurrency(item.price, item.currency).replace("R$", "").trim()}
+              {formatCurrency(item.price).replace("R$", "").replace(/ /, "").trim()}
             </span>
           </div>
 
@@ -102,7 +103,7 @@ export function ProductCard({ item, language, onClick }: ProductCardProps) {
             <button
               onClick={(e) => { e.stopPropagation(); onClick(); }}
               className="flex items-center gap-1 text-[11.5px] font-semibold text-olive-700 hover:text-olive-700/80 transition-colors"
-              aria-label={`${t.viewDetails}: ${item.name[language]}`}
+              aria-label={`${t.viewDetails}: ${item.name}`}
             >
               {t.viewDetails}
               <ArrowRight className="w-3.5 h-3.5" />

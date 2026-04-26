@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import type { Language, MenuItem } from "@/types/menu";
 import { translations } from "@/utils/translations";
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/lib/currency";
 
 interface ProductModalProps {
   item: MenuItem | null;
@@ -23,9 +23,10 @@ export function ProductModal({ item, language, onClose, onCallWaiter, allMenuIte
 
   const t = translations[language];
   const isAvailable = item.available;
+  const badge = item.badge?.[language];
 
-  const pairedItems = item.pairings
-    ? allMenuItems.filter(m => item.pairings?.includes(m.id))
+  const pairedItems = item.pairings?.length
+    ? allMenuItems.filter(m => item.pairings.includes(m.id))
     : [];
 
   return (
@@ -34,7 +35,7 @@ export function ProductModal({ item, language, onClose, onCallWaiter, allMenuIte
         className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         role="dialog"
         aria-modal="true"
-        aria-label={item.name[language]}
+        aria-label={item.name}
       >
         {/* Backdrop */}
         <motion.div
@@ -71,11 +72,11 @@ export function ProductModal({ item, language, onClose, onCallWaiter, allMenuIte
           {/* Scrollable content */}
           <div className="overflow-y-auto flex-1 overscroll-contain">
             {/* Product image */}
-            {item.image ? (
+            {item.imageUrl ? (
               <div className="relative w-full h-52 sm:h-64 bg-[#F1ECDC] shrink-0">
                 <Image
-                  src={item.image}
-                  alt={item.name[language]}
+                  src={item.imageUrl}
+                  alt={item.name}
                   fill
                   referrerPolicy="no-referrer"
                   className={`object-cover ${!isAvailable ? "grayscale" : ""}`}
@@ -100,19 +101,19 @@ export function ProductModal({ item, language, onClose, onCallWaiter, allMenuIte
               {/* Name + Price */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  {item.badge && (
+                  {badge && (
                     <span className="inline-block text-[10px] font-bold tracking-[0.12em] uppercase text-gold mb-1.5">
-                      {item.badge}
+                      {badge}
                     </span>
                   )}
                   <h2 className="font-serif text-[26px] font-semibold text-text-main leading-tight">
-                    {item.name[language]}
+                    {item.name}
                   </h2>
                 </div>
                 <div className="flex items-baseline gap-0.5 shrink-0">
                   <span className="text-[11px] text-text-main/50 tracking-[0.08em]">R$</span>
                   <span className="font-serif text-[28px] font-semibold text-olive-700 leading-none">
-                    {formatCurrency(item.price, item.currency).replace("R$", "").trim()}
+                    {formatCurrency(item.price).replace("R$", "").replace(/ /, "").trim()}
                   </span>
                 </div>
               </div>
@@ -157,13 +158,7 @@ export function ProductModal({ item, language, onClose, onCallWaiter, allMenuIte
               <div className="flex flex-col gap-3 pt-1 pb-2">
                 <button
                   onClick={() => setLiked(prev => !prev)}
-                  className={`
-                    flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-[14px] tracking-wide transition-all
-                    ${liked
-                      ? "bg-olive-700 text-warm-white"
-                      : "bg-olive-700 text-warm-white hover:bg-olive-700/90 active:scale-[0.98]"
-                    }
-                  `}
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-[14px] tracking-wide bg-olive-700 text-warm-white hover:bg-olive-700/90 active:scale-[0.98] transition-all"
                   aria-pressed={liked}
                 >
                   <Heart className={`w-4 h-4 transition-all ${liked ? "fill-warm-white scale-110" : ""}`} />
@@ -200,10 +195,10 @@ function SectionLabel({ label }: { label: string }) {
 function PairingCard({ item, language }: { item: MenuItem; language: Language }) {
   return (
     <div className="snap-start shrink-0 w-[120px] rounded-xl bg-white border border-[#2F2F2F]/8 overflow-hidden flex flex-col">
-      {item.image ? (
+      {item.imageUrl ? (
         <div className="relative w-full h-[72px] bg-[#F1ECDC] overflow-hidden">
           <Image
-            src={item.image}
+            src={item.imageUrl}
             alt=""
             fill
             referrerPolicy="no-referrer"
@@ -218,10 +213,10 @@ function PairingCard({ item, language }: { item: MenuItem; language: Language })
       )}
       <div className="p-2.5">
         <h5 className="font-serif font-semibold text-[13px] leading-tight text-text-main line-clamp-2">
-          {item.name[language]}
+          {item.name}
         </h5>
         <p className="text-[11px] font-serif italic text-olive-700 mt-1">
-          {formatCurrency(item.price, item.currency)}
+          {formatCurrency(item.price)}
         </p>
       </div>
     </div>
