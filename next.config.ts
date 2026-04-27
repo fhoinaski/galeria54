@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // Placeholder images used by seed data
       { protocol: "https", hostname: "picsum.photos", port: "", pathname: "/**" },
+      // QR code generation service (used by admin QRCodeDisplay)
+      { protocol: "https", hostname: "api.qrserver.com", pathname: "/**" },
       // Cloudflare R2 public bucket (set R2_PUBLIC_URL in production)
       ...r2RemotePattern(),
     ],

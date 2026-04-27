@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'feat: Cardápio Caffè 54 — refactor premium completo' --body ' *)",
+      "Bash(gh auth *)",
+      "Bash(npm run *)",
+      "Bash(gh pr create --title 'feat: Full admin panel + dynamic data layer for Caffè 54' --body ' *)",
+      "Bash(npm install *)",
+      "Bash(git reset *)",
+      "Bash(node -e \"console.log\\(JSON.stringify\\(require\\('./node_modules/@cloudflare/next-on-pages/package.json'\\).exports, null, 2\\)\\)\")",
+      "Bash(ADMIN_ACCESS_TOKEN=build-check-token npm run build)",
+      "Bash(node -e \"import\\('@cloudflare/next-on-pages'\\).then\\(m => console.log\\(Object.keys\\(m\\)\\)\\).catch\\(e => console.log\\('ESM err:', e.message\\)\\)\")",
+      "Bash(gh pr create --title 'fix: correct Cloudflare integration and env security' --body ' *)",
+      "Bash(ADMIN_ACCESS_TOKEN=build-check npm run build)",
+      "Bash(git fetch *)",
+      "Bash(git rebase *)",
+      "Bash(gh pr create --title 'fix: Cloudflare Pages deployment — edge runtime, env security, build fixes' --base main --head claude/happy-mestorf-53ae29 --body ' *)"
+    ]
+  }
+}
