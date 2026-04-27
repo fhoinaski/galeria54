@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { menuRepository } from "@/lib/menu-repository";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/auth-admin";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };

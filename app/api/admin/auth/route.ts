@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 
+export const runtime = "edge";
+
 export async function POST(request: Request) {
   try {
     const { token } = await request.json() as { token?: string };

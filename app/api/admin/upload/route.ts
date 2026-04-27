@@ -4,6 +4,7 @@ import { validateImageFile } from "@/lib/image";
 import { storage } from "@/lib/storage";
 import { env } from "@/lib/env";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 // Max body size: IMAGE_MAX_SIZE_MB + 10 KB for multipart overhead

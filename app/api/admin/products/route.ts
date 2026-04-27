@@ -4,6 +4,7 @@ import { verifyAdminRequest, unauthorizedResponse } from "@/lib/auth-admin";
 import { validateMenuItem } from "@/lib/validation";
 import type { CreateMenuItemInput } from "@/types/menu";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export async function GET() {

@@ -4,6 +4,8 @@ import { Package, Tag, TrendingUp, AlertCircle, Star, Clock } from "lucide-react
 import { menuRepository } from "@/lib/menu-repository";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function AdminDashboardPage() {

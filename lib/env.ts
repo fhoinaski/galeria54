@@ -49,8 +49,8 @@ export const env = {
   appUrl:  get("NEXT_PUBLIC_APP_URL",  "http://localhost:3000"),
   appName: get("NEXT_PUBLIC_APP_NAME", "Caffè 54 Menu"),
 
-  // Admin — always required, no fallback
-  adminAccessToken: getRequired("ADMIN_ACCESS_TOKEN"),
+  // Admin — lazy getter: evaluated on first access (not at build time)
+  get adminAccessToken() { return getRequired("ADMIN_ACCESS_TOKEN"); },
 
   // Database — D1 access via CF binding (see lib/db.ts)
   databaseProvider: get("DATABASE_PROVIDER", "local") as "local" | "d1",
@@ -79,4 +79,4 @@ export const env = {
 
   // Cache — used for HTTP Cache-Control headers
   cacheTtlSeconds: getNumber("CACHE_TTL_SECONDS", 60),
-} as const;
+};

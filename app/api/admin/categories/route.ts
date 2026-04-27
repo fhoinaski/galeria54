@@ -5,6 +5,7 @@ import { validateCategory } from "@/lib/validation";
 import { slugify } from "@/lib/slugify";
 import type { CreateCategoryInput } from "@/types/menu";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
