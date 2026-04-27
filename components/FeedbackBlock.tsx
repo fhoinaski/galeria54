@@ -103,7 +103,19 @@ export function FeedbackBlock({ language }: { language: Language }) {
 
         <button
           disabled={rating === 0}
-          onClick={() => setSubmitted(true)}
+          onClick={async () => {
+            try {
+              await fetch("/api/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  rating,
+                  comment: comment.trim() || undefined,
+                }),
+              });
+            } catch { /* best-effort */ }
+            setSubmitted(true);
+          }}
           className="w-full bg-olive-700 text-warm-white py-3.5 rounded-full font-semibold text-[14px] tracking-wide transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-olive-700/90 active:scale-[0.98]"
         >
           {t.feedbackSubmit}

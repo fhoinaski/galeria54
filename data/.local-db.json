@@ -1,0 +1,576 @@
+{
+  "categories": [
+    {
+      "id": "vitrine",
+      "slug": "vitrine",
+      "order": 0,
+      "active": true,
+      "name": {
+        "pt": "Vitrine",
+        "en": "Showcase",
+        "es": "Vitrina"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "breakfast",
+      "slug": "breakfast",
+      "order": 1,
+      "active": true,
+      "name": {
+        "pt": "Breakfast",
+        "en": "Breakfast",
+        "es": "Desayuno"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "sanduiches",
+      "slug": "sanduiches",
+      "order": 2,
+      "active": true,
+      "name": {
+        "pt": "Sanduíches",
+        "en": "Sandwiches",
+        "es": "Sándwiches"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "doces",
+      "slug": "doces",
+      "order": 3,
+      "active": true,
+      "name": {
+        "pt": "Doces",
+        "en": "Sweets",
+        "es": "Dulces"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cafes-quentes",
+      "slug": "cafes-quentes",
+      "order": 4,
+      "active": true,
+      "name": {
+        "pt": "Cafés Quentes",
+        "en": "Hot Coffees",
+        "es": "Cafés Calientes"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cafes-gelados",
+      "slug": "cafes-gelados",
+      "order": 5,
+      "active": true,
+      "name": {
+        "pt": "Cafés Gelados",
+        "en": "Iced Coffees",
+        "es": "Cafés Helados"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "drinks",
+      "slug": "drinks",
+      "order": 6,
+      "active": true,
+      "name": {
+        "pt": "Drinks",
+        "en": "Drinks",
+        "es": "Bebidas Especiales"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "bebidas",
+      "slug": "bebidas",
+      "order": 7,
+      "active": true,
+      "name": {
+        "pt": "Bebidas",
+        "en": "Beverages",
+        "es": "Bebidas"
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "items": [
+    {
+      "id": "c-croissant",
+      "categoryId": "vitrine",
+      "name": "Croissant Tradicional",
+      "description": {
+        "pt": "Massa folhada amanteigada, assada diariamente na nossa confeitaria.",
+        "en": "Buttery puff pastry, baked daily in our bakery.",
+        "es": "Hojaldre de mantequilla, horneado diariamente en nuestra pastelería."
+      },
+      "price": 1400,
+      "imageUrl": "https://picsum.photos/seed/croissant/400/300",
+      "featured": false,
+      "available": true,
+      "order": 0,
+      "tags": [
+        "Vegetariano"
+      ],
+      "allergens": [
+        "Glúten",
+        "Lactose"
+      ],
+      "pairings": [
+        "c-espresso",
+        "c-cappuccino"
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "c-pain-au-chocolat",
+      "categoryId": "vitrine",
+      "name": "Pain au Chocolat",
+      "description": {
+        "pt": "Clássico francês com duas barras de chocolate amargo intenso.",
+        "en": "French classic with two bars of intense dark chocolate.",
+        "es": "Clásico francés con dos barras de chocolate negro intenso."
+      },
+      "price": 1800,
+      "imageUrl": "https://picsum.photos/seed/painauchoc/400/300",
+      "badge": {
+        "pt": "Especial",
+        "en": "Special",
+        "es": "Especial"
+      },
+      "featured": true,
+      "available": true,
+      "order": 1,
+      "tags": [],
+      "allergens": [
+        "Glúten",
+        "Lactose",
+        "Soja"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "colazione-del-mattino",
+      "categoryId": "breakfast",
+      "name": "Colazione Del Mattino",
+      "description": {
+        "pt": "Ovos fritos, bacon, creme de abacate, toast e manteiga da casa.",
+        "en": "Fried eggs, bacon, avocado cream, toast and house butter.",
+        "es": "Huevos fritos, tocino, crema de aguacate, tostada y mantequilla de la casa."
+      },
+      "price": 4600,
+      "imageUrl": "https://picsum.photos/seed/colazione/400/300",
+      "badge": {
+        "pt": "Especial da casa",
+        "en": "House Special",
+        "es": "Especial de la casa"
+      },
+      "featured": true,
+      "available": true,
+      "order": 0,
+      "tags": [
+        "Proteico"
+      ],
+      "allergens": [
+        "Glúten",
+        "Ovos",
+        "Lactose"
+      ],
+      "pairings": [
+        "latte-vaniglia",
+        "c-espresso"
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "classico",
+      "categoryId": "breakfast",
+      "name": "Classico",
+      "description": {
+        "pt": "Ovos mexidos e toast.",
+        "en": "Scrambled eggs and toast.",
+        "es": "Huevos revueltos y tostada."
+      },
+      "price": 3200,
+      "imageUrl": "https://picsum.photos/seed/classico/400/300",
+      "featured": false,
+      "available": true,
+      "order": 1,
+      "tags": [],
+      "allergens": [
+        "Glúten",
+        "Ovos"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "b-avocado-toast",
+      "categoryId": "breakfast",
+      "name": "Avocado Toast",
+      "description": {
+        "pt": "Pão de fermentação natural, creme de abacate temperado, ovo poché e fios de azeite.",
+        "en": "Sourdough bread, seasoned avocado cream, poached egg, and a drizzle of olive oil.",
+        "es": "Pan de masa madre, crema de aguacate condimentada, huevo escalfado y aceite de oliva."
+      },
+      "price": 3200,
+      "imageUrl": "https://picsum.photos/seed/avocado/400/300",
+      "featured": false,
+      "available": true,
+      "order": 2,
+      "tags": [
+        "Vegetariano",
+        "Proteico"
+      ],
+      "allergens": [
+        "Glúten",
+        "Ovos"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "b-pao-na-chapa",
+      "categoryId": "breakfast",
+      "name": "Pão na Chapa Premium",
+      "description": {
+        "pt": "Pão de queijo da Canastra ou pão francês tostado com manteiga Ghee.",
+        "en": "Canastra cheese bread or French bread toasted with Ghee butter.",
+        "es": "Pan de queso de Canastra o pan francés tostado con mantequilla Ghee."
+      },
+      "price": 1200,
+      "featured": false,
+      "available": true,
+      "order": 3,
+      "tags": [],
+      "allergens": [
+        "Glúten",
+        "Lactose"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "waffle-salmone",
+      "categoryId": "sanduiches",
+      "name": "Waffle Salmone",
+      "description": {
+        "pt": "Waffle, abacate, salmão defumado e sour cream.",
+        "en": "Waffle, avocado, smoked salmon and sour cream.",
+        "es": "Waffle, aguacate, salmón ahumado y crema agria."
+      },
+      "price": 5500,
+      "imageUrl": "https://picsum.photos/seed/wafflesalmone/400/300",
+      "badge": {
+        "pt": "Premium",
+        "en": "Premium",
+        "es": "Premium"
+      },
+      "featured": false,
+      "available": true,
+      "order": 0,
+      "tags": [],
+      "allergens": [
+        "Glúten",
+        "Lactose",
+        "Peixes"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "toast-pistacchio",
+      "categoryId": "doces",
+      "name": "Toast Pistacchio",
+      "description": {
+        "pt": "Pão de fermentação natural, creme de ricota e creme praliné de pistache.",
+        "en": "Sourdough bread, ricotta cream and pistachio praline cream.",
+        "es": "Pan de masa madre, crema de ricota y crema praliné de pistacho."
+      },
+      "price": 2600,
+      "imageUrl": "https://picsum.photos/seed/toastpistacchio/400/300",
+      "badge": {
+        "pt": "Combina com café",
+        "en": "Goes with coffee",
+        "es": "Combina con café"
+      },
+      "featured": false,
+      "available": true,
+      "order": 0,
+      "tags": [],
+      "allergens": [
+        "Glúten",
+        "Lactose",
+        "Frutos secos"
+      ],
+      "pairings": [
+        "c-espresso",
+        "latte-vaniglia"
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "tiramisu",
+      "categoryId": "doces",
+      "name": "Tiramisu",
+      "description": {
+        "pt": "Savoiardi, espresso da casa, creme de mascarpone e cacau.",
+        "en": "Savoiardi biscuits, house espresso, mascarpone cream and cocoa.",
+        "es": "Savoiardi, espresso de la casa, crema de mascarpone y cacao."
+      },
+      "price": 2400,
+      "imageUrl": "https://picsum.photos/seed/tiramisu/400/300",
+      "badge": {
+        "pt": "Mais pedido",
+        "en": "Most ordered",
+        "es": "Más pedido"
+      },
+      "featured": true,
+      "available": true,
+      "order": 1,
+      "tags": [],
+      "allergens": [
+        "Lactose",
+        "Glúten",
+        "Ovos"
+      ],
+      "pairings": [
+        "c-espresso"
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "frutta-fresca",
+      "categoryId": "doces",
+      "name": "Frutta Fresca",
+      "description": {
+        "pt": "Frutas do dia, creme de iogurte, granola e mel silvestre.",
+        "en": "Daily fruits, yogurt cream, granola and wild honey.",
+        "es": "Frutas del día, crema de yogur, granola y miel silvestre."
+      },
+      "price": 2500,
+      "imageUrl": "https://picsum.photos/seed/fruttafresca/400/300",
+      "badge": {
+        "pt": "Leve",
+        "en": "Light",
+        "es": "Ligero"
+      },
+      "featured": false,
+      "available": true,
+      "order": 2,
+      "tags": [
+        "Vegetariano"
+      ],
+      "allergens": [
+        "Lactose"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "c-espresso",
+      "categoryId": "cafes-quentes",
+      "name": "Espresso 54",
+      "description": {
+        "pt": "Blend exclusivo da casa. Notas de chocolate amargo, caramelo e acidez cítrica média.",
+        "en": "Exclusive house blend. Notes of dark chocolate, caramel, and medium citric acidity.",
+        "es": "Mezcla exclusiva. Notas de chocolate amargo, caramelo y acidez cítrica media."
+      },
+      "price": 850,
+      "imageUrl": "https://picsum.photos/seed/espresso54/400/300",
+      "featured": false,
+      "available": true,
+      "order": 0,
+      "tags": [],
+      "allergens": [],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "c-cappuccino",
+      "categoryId": "cafes-quentes",
+      "name": "Cappuccino Italiano",
+      "description": {
+        "pt": "Espresso duplo, leite vaporizado e crema espessa. (Opção s/ lactose disponível)",
+        "en": "Double espresso, steamed milk, and thick crema. (Lactose-free option available)",
+        "es": "Espresso doble, leche al vapor y crema espesa. (Opción sin lactosa disponible)"
+      },
+      "price": 1600,
+      "imageUrl": "https://picsum.photos/seed/cappuccino/400/300",
+      "featured": false,
+      "available": true,
+      "order": 1,
+      "tags": [],
+      "allergens": [
+        "Lactose"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "latte-vaniglia",
+      "categoryId": "cafes-quentes",
+      "name": "Latte Vaniglia",
+      "description": {
+        "pt": "Leite vaporizado, baunilha artesanal e espresso.",
+        "en": "Steamed milk, artisanal vanilla and espresso.",
+        "es": "Leche vaporizada, vainilla artesanal y espresso."
+      },
+      "price": 2200,
+      "imageUrl": "https://picsum.photos/seed/lattevaniglia/400/300",
+      "badge": {
+        "pt": "Especial",
+        "en": "Special",
+        "es": "Especial"
+      },
+      "featured": true,
+      "available": true,
+      "order": 2,
+      "tags": [],
+      "allergens": [
+        "Lactose"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "c-iced-latte",
+      "categoryId": "cafes-gelados",
+      "name": "Iced Caramel Latte",
+      "description": {
+        "pt": "Espresso sobre gelo, leite gelado e xarope artesanal de caramelo salgado.",
+        "en": "Espresso over ice, cold milk, and artisanal salted caramel syrup.",
+        "es": "Espresso sobre hielo, leche fría y sirope artesanal de caramelo salado."
+      },
+      "price": 2200,
+      "imageUrl": "https://picsum.photos/seed/icedlatte/400/300",
+      "featured": true,
+      "available": true,
+      "order": 0,
+      "tags": [],
+      "allergens": [
+        "Lactose"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "orange-espresso",
+      "categoryId": "cafes-gelados",
+      "name": "Orange Espresso",
+      "description": {
+        "pt": "Suco de laranja, espresso e gelo.",
+        "en": "Orange juice, espresso and ice.",
+        "es": "Jugo de naranja, espresso y hielo."
+      },
+      "price": 2400,
+      "imageUrl": "https://picsum.photos/seed/orangeespresso/400/300",
+      "badge": {
+        "pt": "Refrescante",
+        "en": "Refreshing",
+        "es": "Refrescante"
+      },
+      "featured": false,
+      "available": true,
+      "order": 1,
+      "tags": [],
+      "allergens": [],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "c-cold-brew",
+      "categoryId": "cafes-gelados",
+      "name": "Cold Brew",
+      "description": {
+        "pt": "Extração a frio por 18 horas para um café refrescante, doce e sem amargor.",
+        "en": "Cold extraction for 18 hours for a refreshing, sweet, and non-bitter coffee.",
+        "es": "Extracción en frío durante 18 horas para un café refrescante, dulce y sin amargor."
+      },
+      "price": 1800,
+      "featured": false,
+      "available": false,
+      "order": 2,
+      "tags": [],
+      "allergens": [],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "espresso-martini",
+      "categoryId": "drinks",
+      "name": "Espresso Martini",
+      "description": {
+        "pt": "Vodka, espresso e licor de café.",
+        "en": "Vodka, espresso and coffee liqueur.",
+        "es": "Vodka, espresso y licor de café."
+      },
+      "price": 4200,
+      "imageUrl": "https://picsum.photos/seed/espressomartini/400/300",
+      "featured": false,
+      "available": true,
+      "order": 0,
+      "tags": [],
+      "allergens": [
+        "Álcool"
+      ],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "suco-laranja",
+      "categoryId": "bebidas",
+      "name": "Suco de Laranja Natural",
+      "description": {
+        "pt": "Laranjas frescas espremidas na hora.",
+        "en": "Fresh oranges squeezed to order.",
+        "es": "Naranjas frescas exprimidas al momento."
+      },
+      "price": 1400,
+      "imageUrl": "https://picsum.photos/seed/sucolaranja/400/300",
+      "featured": false,
+      "available": true,
+      "order": 0,
+      "tags": [
+        "Vegano",
+        "Sem glúten"
+      ],
+      "allergens": [],
+      "pairings": [],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "updatedAt": "2026-04-26T17:45:46.065Z"
+  }
+}

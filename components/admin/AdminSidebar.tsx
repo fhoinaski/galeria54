@@ -2,12 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ShoppingBag, Tag, LogOut, Coffee } from "lucide-react";
+import {
+  LayoutDashboard, ShoppingBag, Tag, LogOut, Coffee,
+  Store, Armchair, Users, CalendarDays, MessageSquare, BarChart3,
+} from "lucide-react";
 
 const NAV = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/products", label: "Produtos", icon: ShoppingBag, exact: false },
-  { href: "/admin/categories", label: "Categorias", icon: Tag, exact: false },
+  { href: "/admin",            label: "Dashboard",    icon: LayoutDashboard, exact: true },
+  { href: "/admin/products",   label: "Produtos",     icon: ShoppingBag,     exact: false },
+  { href: "/admin/categories", label: "Categorias",   icon: Tag,             exact: false },
+  { href: "/admin/tables",     label: "Mesas",        icon: Armchair,        exact: false },
+  { href: "/admin/sessions",   label: "Sessões",      icon: Users,           exact: false },
+  { href: "/admin/events",     label: "Eventos",      icon: CalendarDays,    exact: false },
+  { href: "/admin/feedbacks",  label: "Feedbacks",    icon: MessageSquare,   exact: false },
+  { href: "/admin/analytics",  label: "Analytics",    icon: BarChart3,       exact: false },
+  { href: "/admin/business",   label: "Configurações", icon: Store,          exact: false },
 ];
 
 export function AdminSidebar() {
