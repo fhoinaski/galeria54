@@ -1,32 +1,23 @@
 /**
  * Database abstraction layer.
  *
- * Local provider  — JSON file at data/.local-db.json (dev, zero deps)
+ * Local provider  — in-memory data seeded from /data/seed-menu (dev/build fallback)
  * D1 provider     — Cloudflare D1 via Workers binding caffe54_menu_db
  *
- * Provider selection:
- *   DATABASE_PROVIDER=local  → always use JSON (default)
- *   DATABASE_PROVIDER=d1     → use D1 binding; falls back to local if CF
- *                              context is not available (plain `next dev`)
+ * This file must stay Edge-compatible because Cloudflare Pages requires dynamic
+ * routes to run on the Edge Runtime. Do not import Node-only modules here.
  */
 
-import { readFile, writeFile, mkdir } from "fs/promises";
-import path from "path";
 import type { Category, MenuItem, MenuData, AdminStats } from "@/types/menu";
 import { seedCategories, seedItems } from "@/data/seed-menu";
 import { env } from "./env";
 import { getOptionalRequestContext } from "@cloudflare/next-on-pages";
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
 function now(): string {
   return new Date().toISOString();
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface DbProvider {
-  // Categories
   listCategories(): Promise<Category[]>;
   getCategory(id: string): Promise<Category | null>;
   createCategory(cat: Category): Promise<Category>;
@@ -34,21 +25,15 @@ export interface DbProvider {
   deleteCategory(id: string): Promise<void>;
   categoryHasItems(id: string): Promise<boolean>;
 
-  // Items
   listItems(): Promise<MenuItem[]>;
   getItem(id: string): Promise<MenuItem | null>;
   createItem(item: MenuItem): Promise<MenuItem>;
   updateItem(id: string, patch: Partial<Omit<MenuItem, "id">>): Promise<MenuItem>;
   deleteItem(id: string): Promise<void>;
 
-  // Aggregates
   getMenuData(): Promise<MenuData & { updatedAt: string }>;
   getStats(): Promise<AdminStats>;
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// LOCAL JSON PROVIDER
-// ════════════════════════════════════════════════════════════════════════════
 
 type LocalDB = {
   categories: Category[];
@@ -56,38 +41,24 @@ type LocalDB = {
   meta: { updatedAt: string };
 };
 
-// Lazy — path.join must not run at module init in Edge Runtime
-function getDbPath(): string { return path.join(process.cwd(), "data", ".local-db.json"); }
+const g = globalThis as unknown as { _caffe54Db?: LocalDB | null };
 
-// globalThis cache — survives Next.js HMR
-const g = globalThis as unknown as { _caffe54Db: LocalDB | null };
-if (!g._caffe54Db) g._caffe54Db = null;
+function cloneLocalSeed(): LocalDB {
+  return {
+    categories: structuredClone(seedCategories),
+    items: structuredClone(seedItems),
+    meta: { updatedAt: now() },
+  };
+}
 
 async function readLocal(): Promise<LocalDB> {
-  if (g._caffe54Db) return g._caffe54Db;
-  try {
-    const content = await readFile(getDbPath(), "utf-8");
-    g._caffe54Db = JSON.parse(content) as LocalDB;
-    return g._caffe54Db;
-  } catch {
-    const initial: LocalDB = {
-      categories: seedCategories,
-      items: seedItems,
-      meta: { updatedAt: now() },
-    };
-    await writeLocal(initial);
-    return initial;
-  }
+  if (!g._caffe54Db) g._caffe54Db = cloneLocalSeed();
+  return g._caffe54Db;
 }
 
 async function writeLocal(data: LocalDB): Promise<void> {
   data.meta.updatedAt = now();
   g._caffe54Db = data;
-  try {
-    const p = getDbPath();
-    await mkdir(path.dirname(p), { recursive: true });
-    await writeFile(p, JSON.stringify(data, null, 2), "utf-8");
-  } catch { /* silent — cache still updated */ }
 }
 
 const localProvider: DbProvider = {
@@ -176,280 +147,221 @@ const localProvider: DbProvider = {
   },
 };
 
-// ════════════════════════════════════════════════════════════════════════════
-// D1 PROVIDER
-// ════════════════════════════════════════════════════════════════════════════
+function parseJsonArray(value: unknown): string[] {
+  if (typeof value !== "string") return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
 
-// Row → TypeScript mappers
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToCategory(row: Record<string, any>): Category {
+function rowToCategory(row: Record<string, unknown>): Category {
   return {
-    id: row.id as string,
-    slug: row.slug as string,
-    name: { pt: row.name_pt, en: row.name_en, es: row.name_es },
-    imageUrl: (row.image_url as string | null) ?? undefined,
-    order: row.display_order as number,
-    active: (row.active as number) === 1,
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
+    id: String(row.id),
+    slug: String(row.slug),
+    name: { pt: String(row.name_pt ?? ""), en: String(row.name_en ?? ""), es: String(row.name_es ?? "") },
+    imageUrl: typeof row.image_url === "string" && row.image_url ? row.image_url : undefined,
+    order: Number(row.display_order ?? 0),
+    active: Number(row.active ?? 0) === 1,
+    createdAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? ""),
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToItem(row: Record<string, any>): MenuItem {
-  const hasBadge = !!row.badge_pt;
+function rowToItem(row: Record<string, unknown>): MenuItem {
+  const badgePt = typeof row.badge_pt === "string" && row.badge_pt ? row.badge_pt : undefined;
   return {
-    id: row.id as string,
-    categoryId: row.category_id as string,
-    name: row.name as string,
-    description: { pt: row.description_pt, en: row.description_en, es: row.description_es },
-    price: row.price as number,
-    imageUrl: (row.image_url as string | null) ?? undefined,
-    badge: hasBadge
+    id: String(row.id),
+    categoryId: String(row.category_id),
+    name: String(row.name ?? ""),
+    description: {
+      pt: String(row.description_pt ?? ""),
+      en: String(row.description_en ?? ""),
+      es: String(row.description_es ?? ""),
+    },
+    price: Number(row.price ?? 0),
+    imageUrl: typeof row.image_url === "string" && row.image_url ? row.image_url : undefined,
+    badge: badgePt
       ? {
-          pt: row.badge_pt as string,
-          en: (row.badge_en as string | null) ?? row.badge_pt,
-          es: (row.badge_es as string | null) ?? row.badge_pt,
+          pt: badgePt,
+          en: typeof row.badge_en === "string" && row.badge_en ? row.badge_en : badgePt,
+          es: typeof row.badge_es === "string" && row.badge_es ? row.badge_es : badgePt,
         }
       : undefined,
-    featured: (row.featured as number) === 1,
-    available: (row.available as number) === 1,
-    order: row.display_order as number,
-    tags: JSON.parse((row.tags as string) || "[]") as string[],
-    allergens: JSON.parse((row.allergens as string) || "[]") as string[],
-    pairings: JSON.parse((row.pairings as string) || "[]") as string[],
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
+    featured: Number(row.featured ?? 0) === 1,
+    available: Number(row.available ?? 0) === 1,
+    order: Number(row.display_order ?? 0),
+    tags: parseJsonArray(row.tags),
+    allergens: parseJsonArray(row.allergens),
+    pairings: parseJsonArray(row.pairings),
+    createdAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? ""),
   };
 }
 
 function createD1Provider(d1: D1Database): DbProvider {
   return {
     async listCategories() {
-      const { results } = await d1
-        .prepare("SELECT * FROM categories ORDER BY display_order ASC")
-        .all();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (results as any[]).map(rowToCategory);
+      const { results } = await d1.prepare("SELECT * FROM categories ORDER BY display_order ASC").all();
+      return (results as Record<string, unknown>[]).map(rowToCategory);
     },
-
     async getCategory(id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const row = await d1.prepare("SELECT * FROM categories WHERE id=?").bind(id).first() as any;
+      const row = await d1.prepare("SELECT * FROM categories WHERE id=?").bind(id).first<Record<string, unknown>>();
       return row ? rowToCategory(row) : null;
     },
-
     async createCategory(cat) {
-      await d1
-        .prepare(
-          `INSERT INTO categories
-            (id, slug, name_pt, name_en, name_es, image_url, display_order, active, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        )
-        .bind(
-          cat.id, cat.slug,
-          cat.name.pt, cat.name.en, cat.name.es,
-          cat.imageUrl ?? null,
-          cat.order, cat.active ? 1 : 0,
-          cat.createdAt, cat.updatedAt
-        )
-        .run();
+      await d1.prepare(
+        `INSERT INTO categories
+          (id, slug, name_pt, name_en, name_es, image_url, display_order, active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        cat.id, cat.slug, cat.name.pt, cat.name.en, cat.name.es, cat.imageUrl ?? null,
+        cat.order, cat.active ? 1 : 0, cat.createdAt, cat.updatedAt
+      ).run();
       return cat;
     },
-
     async updateCategory(id, patch) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const current = await d1.prepare("SELECT * FROM categories WHERE id=?").bind(id).first() as any;
+      const current = await d1.prepare("SELECT * FROM categories WHERE id=?").bind(id).first<Record<string, unknown>>();
       if (!current) throw new Error(`Category "${id}" not found.`);
       const merged = { ...rowToCategory(current), ...patch, id, updatedAt: now() };
-      await d1
-        .prepare(
-          `UPDATE categories
-           SET slug=?, name_pt=?, name_en=?, name_es=?, image_url=?,
-               display_order=?, active=?, updated_at=?
-           WHERE id=?`
-        )
-        .bind(
-          merged.slug, merged.name.pt, merged.name.en, merged.name.es,
-          merged.imageUrl ?? null,
-          merged.order, merged.active ? 1 : 0,
-          merged.updatedAt, id
-        )
-        .run();
+      await d1.prepare(
+        `UPDATE categories
+         SET slug=?, name_pt=?, name_en=?, name_es=?, image_url=?, display_order=?, active=?, updated_at=?
+         WHERE id=?`
+      ).bind(
+        merged.slug, merged.name.pt, merged.name.en, merged.name.es, merged.imageUrl ?? null,
+        merged.order, merged.active ? 1 : 0, merged.updatedAt, id
+      ).run();
       return merged;
     },
-
     async deleteCategory(id) {
       await d1.prepare("DELETE FROM categories WHERE id=?").bind(id).run();
     },
-
     async categoryHasItems(id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const row = await d1.prepare("SELECT COUNT(*) AS cnt FROM menu_items WHERE category_id=?").bind(id).first() as any;
-      return (row?.cnt as number ?? 0) > 0;
+      const row = await d1.prepare("SELECT COUNT(*) AS cnt FROM menu_items WHERE category_id=?").bind(id).first<{ cnt: number }>();
+      return Number(row?.cnt ?? 0) > 0;
     },
-
     async listItems() {
-      const { results } = await d1
-        .prepare("SELECT * FROM menu_items ORDER BY category_id, display_order ASC")
-        .all();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (results as any[]).map(rowToItem);
+      const { results } = await d1.prepare("SELECT * FROM menu_items ORDER BY category_id, display_order ASC").all();
+      return (results as Record<string, unknown>[]).map(rowToItem);
     },
-
     async getItem(id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const row = await d1.prepare("SELECT * FROM menu_items WHERE id=?").bind(id).first() as any;
+      const row = await d1.prepare("SELECT * FROM menu_items WHERE id=?").bind(id).first<Record<string, unknown>>();
       return row ? rowToItem(row) : null;
     },
-
     async createItem(item) {
-      await d1
-        .prepare(
-          `INSERT INTO menu_items
-            (id, category_id, name, description_pt, description_en, description_es,
-             price, image_url, badge_pt, badge_en, badge_es,
-             featured, available, display_order,
-             tags, allergens, pairings, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        )
-        .bind(
-          item.id, item.categoryId, item.name,
-          item.description.pt, item.description.en, item.description.es,
-          item.price, item.imageUrl ?? null,
-          item.badge?.pt ?? null, item.badge?.en ?? null, item.badge?.es ?? null,
-          item.featured ? 1 : 0, item.available ? 1 : 0, item.order,
-          JSON.stringify(item.tags),
-          JSON.stringify(item.allergens),
-          JSON.stringify(item.pairings),
-          item.createdAt, item.updatedAt
-        )
-        .run();
+      await d1.prepare(
+        `INSERT INTO menu_items
+          (id, category_id, name, description_pt, description_en, description_es,
+           price, image_url, badge_pt, badge_en, badge_es,
+           featured, available, display_order, tags, allergens, pairings, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        item.id, item.categoryId, item.name,
+        item.description.pt, item.description.en, item.description.es,
+        item.price, item.imageUrl ?? null,
+        item.badge?.pt ?? null, item.badge?.en ?? null, item.badge?.es ?? null,
+        item.featured ? 1 : 0, item.available ? 1 : 0, item.order,
+        JSON.stringify(item.tags), JSON.stringify(item.allergens), JSON.stringify(item.pairings),
+        item.createdAt, item.updatedAt
+      ).run();
       return item;
     },
-
     async updateItem(id, patch) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const current = await d1.prepare("SELECT * FROM menu_items WHERE id=?").bind(id).first() as any;
+      const current = await d1.prepare("SELECT * FROM menu_items WHERE id=?").bind(id).first<Record<string, unknown>>();
       if (!current) throw new Error(`Item "${id}" not found.`);
       const merged = { ...rowToItem(current), ...patch, id, updatedAt: now() };
-      await d1
-        .prepare(
-          `UPDATE menu_items
-           SET category_id=?, name=?,
-               description_pt=?, description_en=?, description_es=?,
-               price=?, image_url=?, badge_pt=?, badge_en=?, badge_es=?,
-               featured=?, available=?, display_order=?,
-               tags=?, allergens=?, pairings=?, updated_at=?
-           WHERE id=?`
-        )
-        .bind(
-          merged.categoryId, merged.name,
-          merged.description.pt, merged.description.en, merged.description.es,
-          merged.price, merged.imageUrl ?? null,
-          merged.badge?.pt ?? null, merged.badge?.en ?? null, merged.badge?.es ?? null,
-          merged.featured ? 1 : 0, merged.available ? 1 : 0, merged.order,
-          JSON.stringify(merged.tags),
-          JSON.stringify(merged.allergens),
-          JSON.stringify(merged.pairings),
-          merged.updatedAt, id
-        )
-        .run();
+      await d1.prepare(
+        `UPDATE menu_items
+         SET category_id=?, name=?, description_pt=?, description_en=?, description_es=?,
+             price=?, image_url=?, badge_pt=?, badge_en=?, badge_es=?, featured=?, available=?, display_order=?,
+             tags=?, allergens=?, pairings=?, updated_at=?
+         WHERE id=?`
+      ).bind(
+        merged.categoryId, merged.name,
+        merged.description.pt, merged.description.en, merged.description.es,
+        merged.price, merged.imageUrl ?? null,
+        merged.badge?.pt ?? null, merged.badge?.en ?? null, merged.badge?.es ?? null,
+        merged.featured ? 1 : 0, merged.available ? 1 : 0, merged.order,
+        JSON.stringify(merged.tags), JSON.stringify(merged.allergens), JSON.stringify(merged.pairings),
+        merged.updatedAt, id
+      ).run();
       return merged;
     },
-
     async deleteItem(id) {
-      // Remove from pairings in other items first (best-effort)
-      const { results } = await d1
-        .prepare("SELECT id, pairings FROM menu_items WHERE pairings LIKE ?")
-        .bind(`%${id}%`)
-        .all();
+      const { results } = await d1.prepare("SELECT id, pairings FROM menu_items WHERE pairings LIKE ?").bind(`%${id}%`).all();
       const updates = (results as Array<{ id: string; pairings: string }>).map(row => {
-        const arr = (JSON.parse(row.pairings || "[]") as string[]).filter(p => p !== id);
-        return d1.prepare("UPDATE menu_items SET pairings=? WHERE id=?")
-          .bind(JSON.stringify(arr), row.id);
+        const arr = parseJsonArray(row.pairings).filter(p => p !== id);
+        return d1.prepare("UPDATE menu_items SET pairings=? WHERE id=?").bind(JSON.stringify(arr), row.id);
       });
       if (updates.length) await d1.batch(updates);
       await d1.prepare("DELETE FROM menu_items WHERE id=?").bind(id).run();
     },
-
     async getMenuData() {
       const [catResult, itemResult] = await d1.batch([
         d1.prepare("SELECT * FROM categories WHERE active=1 ORDER BY display_order ASC"),
         d1.prepare("SELECT * FROM menu_items ORDER BY category_id, display_order ASC"),
       ]);
-      const lastUpdated = await d1
-        .prepare(
-          `SELECT MAX(updated_at) AS ts FROM (
-             SELECT updated_at FROM categories
-             UNION ALL
-             SELECT updated_at FROM menu_items
-           )`
-        )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .first() as any;
+      const lastUpdated = await d1.prepare(
+        `SELECT MAX(updated_at) AS ts FROM (
+           SELECT updated_at FROM categories
+           UNION ALL
+           SELECT updated_at FROM menu_items
+         )`
+      ).first<{ ts: string }>();
       return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        categories: (catResult.results as any[]).map(rowToCategory),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        items: (itemResult.results as any[]).map(rowToItem),
-        updatedAt: (lastUpdated?.ts as string) ?? now(),
+        categories: (catResult.results as Record<string, unknown>[]).map(rowToCategory),
+        items: (itemResult.results as Record<string, unknown>[]).map(rowToItem),
+        updatedAt: lastUpdated?.ts ?? now(),
       };
     },
-
     async getStats() {
       const [itemStats, catStats] = await d1.batch([
         d1.prepare(
-          `SELECT
-             COUNT(*) AS total,
-             SUM(CASE WHEN available=1 THEN 1 ELSE 0 END) AS avail,
-             SUM(CASE WHEN available=0 THEN 1 ELSE 0 END) AS unavail,
-             SUM(CASE WHEN featured=1 THEN 1 ELSE 0 END) AS feat,
-             MAX(updated_at) AS last_item
+          `SELECT COUNT(*) AS total,
+                  SUM(CASE WHEN available=1 THEN 1 ELSE 0 END) AS avail,
+                  SUM(CASE WHEN available=0 THEN 1 ELSE 0 END) AS unavail,
+                  SUM(CASE WHEN featured=1 THEN 1 ELSE 0 END) AS feat,
+                  MAX(updated_at) AS last_item
            FROM menu_items`
         ),
         d1.prepare(
-          `SELECT
-             SUM(CASE WHEN active=1 THEN 1 ELSE 0 END) AS active_cats,
-             MAX(updated_at) AS last_cat
+          `SELECT SUM(CASE WHEN active=1 THEN 1 ELSE 0 END) AS active_cats,
+                  MAX(updated_at) AS last_cat
            FROM categories`
         ),
       ]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ir = (itemStats.results[0] ?? {}) as any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cr = (catStats.results[0] ?? {}) as any;
-      const lastUpdated = ir.last_item > cr.last_cat ? ir.last_item : cr.last_cat;
+      const ir = (itemStats.results[0] ?? {}) as Record<string, unknown>;
+      const cr = (catStats.results[0] ?? {}) as Record<string, unknown>;
+      const lastItem = typeof ir.last_item === "string" ? ir.last_item : "";
+      const lastCat = typeof cr.last_cat === "string" ? cr.last_cat : "";
       return {
-        totalProducts:       ir.total        as number ?? 0,
-        availableProducts:   ir.avail        as number ?? 0,
-        unavailableProducts: ir.unavail      as number ?? 0,
-        featuredProducts:    ir.feat         as number ?? 0,
-        activeCategories:    cr.active_cats  as number ?? 0,
-        lastUpdated:         lastUpdated     as string ?? now(),
+        totalProducts: Number(ir.total ?? 0),
+        availableProducts: Number(ir.avail ?? 0),
+        unavailableProducts: Number(ir.unavail ?? 0),
+        featuredProducts: Number(ir.feat ?? 0),
+        activeCategories: Number(cr.active_cats ?? 0),
+        lastUpdated: lastItem > lastCat ? lastItem : (lastCat || now()),
       };
     },
   };
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Provider selector
-// ════════════════════════════════════════════════════════════════════════════
-
 function tryGetD1(): D1Database | null {
   if (env.databaseProvider !== "d1") return null;
-  const ctx = getOptionalRequestContext();
-  if (!ctx) {
+  try {
+    const ctx = getOptionalRequestContext();
+    return ctx?.env?.caffe54_menu_db ?? null;
+  } catch {
     if (process.env.NODE_ENV !== "test") {
-      console.warn("[db] DATABASE_PROVIDER=d1 but CF context unavailable — using local JSON.");
+      console.warn("[db] DATABASE_PROVIDER=d1 but Cloudflare request context is unavailable — using local seed data.");
     }
     return null;
   }
-  return ctx.env.caffe54_menu_db;
 }
 
-// Re-use a cached provider within the same request / module lifetime
 let _provider: DbProvider | null = null;
 
 export function getDbProvider(): DbProvider {
@@ -459,7 +371,6 @@ export function getDbProvider(): DbProvider {
   return _provider;
 }
 
-/** Invalidate provider cache (useful after hot-reload or test setup) */
 export function invalidateDbCache(): void {
   _provider = null;
   g._caffe54Db = null;
