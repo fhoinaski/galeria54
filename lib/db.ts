@@ -56,7 +56,8 @@ type LocalDB = {
   meta: { updatedAt: string };
 };
 
-const DB_PATH = path.join(process.cwd(), "data", ".local-db.json");
+// Lazy — path.join must not run at module init in Edge Runtime
+function getDbPath(): string { return path.join(process.cwd(), "data", ".local-db.json"); }
 
 // globalThis cache — survives Next.js HMR
 const g = globalThis as unknown as { _caffe54Db: LocalDB | null };
@@ -65,7 +66,7 @@ if (!g._caffe54Db) g._caffe54Db = null;
 async function readLocal(): Promise<LocalDB> {
   if (g._caffe54Db) return g._caffe54Db;
   try {
-    const content = await readFile(DB_PATH, "utf-8");
+    const content = await readFile(getDbPath(), "utf-8");
     g._caffe54Db = JSON.parse(content) as LocalDB;
     return g._caffe54Db;
   } catch {
@@ -83,8 +84,9 @@ async function writeLocal(data: LocalDB): Promise<void> {
   data.meta.updatedAt = now();
   g._caffe54Db = data;
   try {
-    await mkdir(path.dirname(DB_PATH), { recursive: true });
-    await writeFile(DB_PATH, JSON.stringify(data, null, 2), "utf-8");
+    const p = getDbPath();
+    await mkdir(path.dirname(p), { recursive: true });
+    await writeFile(p, JSON.stringify(data, null, 2), "utf-8");
   } catch { /* silent — cache still updated */ }
 }
 

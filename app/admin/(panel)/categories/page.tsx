@@ -3,6 +3,8 @@ import { menuRepository } from "@/lib/menu-repository";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { CategoriesClient } from "./CategoriesClient";
 
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Categorias" };
 
 export default async function AdminCategoriesPage() {

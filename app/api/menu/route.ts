@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { menuRepository } from "@/lib/menu-repository";
 import { env } from "@/lib/env";
 
-// ISR revalidation (Next.js cache layer)
+export const runtime = "edge";
 export const revalidate = 60;
-// Always run server-side (no static pre-render for dynamic data)
 export const dynamic = "force-dynamic";
 
 export async function GET() {

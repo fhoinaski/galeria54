@@ -4,6 +4,9 @@ import { menuRepository } from "@/lib/menu-repository";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { ProductForm } from "@/components/admin/ProductForm";
 
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ id: string }>;
 }

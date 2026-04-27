@@ -34,7 +34,18 @@ const nextConfig: NextConfig = {
 
   transpilePackages: ["motion"],
 
-  webpack: (config, { dev }) => {
+  webpack: (config, { nextRuntime, dev }) => {
+    // Stub out Node.js built-ins when bundling for the Edge Runtime.
+    // The local file-system provider only runs in dev (DATABASE_PROVIDER=local);
+    // in production (D1/R2) these imports are never called.
+    if (nextRuntime === "edge") {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        "fs/promises": false,
+        path: false,
+      };
+    }
     if (dev && process.env.DISABLE_HMR === "true") {
       config.watchOptions = { ignored: /.*/ };
     }
