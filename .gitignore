@@ -5,3 +5,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local dev database files — never commit, start empty each environment
+data/.local-db.json
+data/.local-ext.json
+tsconfig.tsbuildinfo

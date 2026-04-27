@@ -1,7 +1,7 @@
 /**
  * Database abstraction layer.
  *
- * Local provider  — in-memory data seeded from /data/seed-menu (dev/build fallback)
+ * Local provider  — in-memory store, starts empty (populate via admin panel)
  * D1 provider     — Cloudflare D1 via Workers binding caffe54_menu_db
  *
  * This file must stay Edge-compatible because Cloudflare Pages requires dynamic
@@ -9,7 +9,6 @@
  */
 
 import type { Category, MenuItem, MenuData, AdminStats } from "@/types/menu";
-import { seedCategories, seedItems } from "@/data/seed-menu";
 import { env } from "./env";
 import { getOptionalRequestContext } from "@cloudflare/next-on-pages";
 
@@ -43,16 +42,8 @@ type LocalDB = {
 
 const g = globalThis as unknown as { _caffe54Db?: LocalDB | null };
 
-function cloneLocalSeed(): LocalDB {
-  return {
-    categories: structuredClone(seedCategories),
-    items: structuredClone(seedItems),
-    meta: { updatedAt: now() },
-  };
-}
-
 async function readLocal(): Promise<LocalDB> {
-  if (!g._caffe54Db) g._caffe54Db = cloneLocalSeed();
+  if (!g._caffe54Db) g._caffe54Db = { categories: [], items: [], meta: { updatedAt: now() } };
   return g._caffe54Db;
 }
 
