@@ -21,8 +21,6 @@ interface MenuClientProps {
   items: MenuItem[];
 }
 
-const FEATURED_IDS = ["colazione-del-mattino", "tiramisu", "latte-vaniglia"];
-
 export function MenuClient({ categories, items }: MenuClientProps) {
   const { language, setLanguage } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +39,7 @@ export function MenuClient({ categories, items }: MenuClientProps) {
   }, [waiterToast]);
 
   const featuredItems = useMemo(
-    () => items.filter(i => FEATURED_IDS.includes(i.id) && i.available),
+    () => items.filter(i => i.featured && i.available).slice(0, 6),
     [items]
   );
 
@@ -109,7 +107,17 @@ export function MenuClient({ categories, items }: MenuClientProps) {
 
         {/* Menu grid */}
         <div id="cardapio" className="max-w-7xl mx-auto px-4 py-10">
-          {filteredSections.length === 0 ? (
+          {items.length === 0 ? (
+            <div className="text-center py-28 flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-olive-700/8 flex items-center justify-center mb-2">
+                <span className="font-serif text-2xl italic text-olive-700">54</span>
+              </div>
+              <p className="font-serif text-[22px] text-olive-700 font-semibold">Cardápio em breve</p>
+              <p className="text-text-main/50 text-sm max-w-xs leading-relaxed">
+                Estamos preparando tudo com cuidado. Em breve o cardápio completo estará disponível aqui.
+              </p>
+            </div>
+          ) : filteredSections.length === 0 ? (
             <div className="text-center py-24">
               <p className="text-text-main/50 text-base">{t.emptySearch}</p>
               <button
@@ -155,7 +163,7 @@ export function MenuClient({ categories, items }: MenuClientProps) {
           )}
         </div>
 
-        {isHome && (
+        {isHome && items.length > 0 && (
           <RecommendationBlock
             language={language}
             allItems={items}

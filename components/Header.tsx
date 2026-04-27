@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { BellRing } from "lucide-react";
 import type { Language } from "@/types/menu";
 import { translations } from "@/utils/translations";
@@ -12,24 +13,32 @@ interface HeaderProps {
 
 export function Header({ language, setLanguage, onCallWaiter }: HeaderProps) {
   const t = translations[language];
+  const searchParams = useSearchParams();
+  const tableParam = searchParams.get("table");
 
   return (
     <header className="sticky top-0 z-40 bg-[#FFFDF8]/95 backdrop-blur-md border-b border-[#2F2F2F]/8">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
 
-        {/* Logo + Mesa */}
+        {/* Logo + Mesa (só exibe mesa se vier via QR code) */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="font-serif text-[18px] leading-none text-olive-700">
             <span className="italic">Caffè</span>
             <span className="ml-1 not-italic font-semibold tracking-wide">54</span>
           </div>
-          <span className="w-px h-3.5 bg-[#2F2F2F]/15" />
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] tracking-[0.15em] uppercase text-text-main/50 font-medium">
-              {t.tableLabel}
-            </span>
-            <span className="text-[10px] tracking-[0.1em] font-semibold text-olive-700">12</span>
-          </div>
+          {tableParam && (
+            <>
+              <span className="w-px h-3.5 bg-[#2F2F2F]/15" />
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] tracking-[0.15em] uppercase text-text-main/50 font-medium">
+                  {t.tableLabel}
+                </span>
+                <span className="text-[10px] tracking-[0.1em] font-semibold text-olive-700 max-w-[80px] truncate">
+                  {tableParam}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Actions */}
