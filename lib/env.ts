@@ -1,23 +1,34 @@
 /**
- * Centralised environment configuration.
+ * Centralised, validated environment configuration.
  * Import `env` instead of reading process.env directly.
  *
+ * Security rule: security-critical variables (ADMIN_ACCESS_TOKEN) are always
+ * required — in production they throw, in development they warn loudly.
  * Cloudflare D1 / R2 are accessed via Workers bindings, not env vars.
- * Security note: ADMIN_ACCESS_TOKEN is read lazily/optionally here so Next.js
- * can complete its build step even when Cloudflare build env vars are not
- * injected into the Vercel build subprocess used by @cloudflare/next-on-pages.
- * Admin requests still fail closed when the token is missing.
+ *
+ * IMPORTANT: adminAccessToken is a lazy getter — it only reads process.env
+ * at call time (runtime), NOT at module import time (build time).
+ * This prevents next build from failing on Cloudflare Pages where env vars
+ * are not available during the build phase.
  */
 
 const isProd = process.env.NODE_ENV === "production";
 
-/** Optional variable — uses fallback when provided; throws in production if no fallback. */
 function get(key: string, fallback?: string): string {
   const value = process.env[key];
   if (value) return value;
   if (fallback !== undefined) return fallback;
   if (isProd) throw new Error(`[env] Missing required variable: ${key}`);
   return "";
+}
+
+function getRequired(key: string): string {
+  const value = process.env[key];
+  if (value) return value;
+  throw new Error(
+    `[env] ${key} is required but not set.\n` +
+    `  → Copy .env.example to .env.local and fill in the value.`
+  );
 }
 
 function getBool(key: string, fallback: boolean): boolean {
@@ -38,7 +49,11 @@ export const env = {
   appUrl:  get("NEXT_PUBLIC_APP_URL",  "http://localhost:3000"),
   appName: get("NEXT_PUBLIC_APP_NAME", "Caffè 54 Menu"),
 
-
+  // Admin — lazy getter: only evaluated at runtime, never at build time
+  // ✅ Isso evita o erro "ADMIN_ACCESS_TOKEN is required" durante o next build
+  get adminAccessToken() {
+    return getRequired("ADMIN_ACCESS_TOKEN");
+  },
 
   // Database — D1 access via CF binding (see lib/db.ts)
   databaseProvider: get("DATABASE_PROVIDER", "local") as "local" | "d1",
@@ -67,4 +82,4 @@ export const env = {
 
   // Cache — used for HTTP Cache-Control headers
   cacheTtlSeconds: getNumber("CACHE_TTL_SECONDS", 60),
-};
+} as const;
