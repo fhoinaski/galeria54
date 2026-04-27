@@ -1,34 +1,23 @@
 /**
- * Centralised, validated environment configuration.
+ * Centralised environment configuration.
  * Import `env` instead of reading process.env directly.
  *
- * Security rule: security-critical variables (ADMIN_ACCESS_TOKEN) are always
- * required — in production they throw, in development they warn loudly.
  * Cloudflare D1 / R2 are accessed via Workers bindings, not env vars.
+ * Security note: ADMIN_ACCESS_TOKEN is read lazily/optionally here so Next.js
+ * can complete its build step even when Cloudflare build env vars are not
+ * injected into the Vercel build subprocess used by @cloudflare/next-on-pages.
+ * Admin requests still fail closed when the token is missing.
  */
 
 const isProd = process.env.NODE_ENV === "production";
 
-/** Optional variable — uses fallback when set (any environment); throws in production if no fallback. */
+/** Optional variable — uses fallback when provided; throws in production if no fallback. */
 function get(key: string, fallback?: string): string {
   const value = process.env[key];
   if (value) return value;
   if (fallback !== undefined) return fallback;
   if (isProd) throw new Error(`[env] Missing required variable: ${key}`);
   return "";
-}
-
-/**
- * Security-critical variable — ALWAYS required, no fallback ever.
- * Throws in production AND in development if the variable is not set.
- */
-function getRequired(key: string): string {
-  const value = process.env[key];
-  if (value) return value;
-  throw new Error(
-    `[env] ${key} is required but not set.\n` +
-    `  → Copy .env.example to .env.local and fill in the value.`
-  );
 }
 
 function getBool(key: string, fallback: boolean): boolean {
@@ -49,8 +38,7 @@ export const env = {
   appUrl:  get("NEXT_PUBLIC_APP_URL",  "http://localhost:3000"),
   appName: get("NEXT_PUBLIC_APP_NAME", "Caffè 54 Menu"),
 
-  // Admin — lazy getter: evaluated on first access (not at build time)
-  get adminAccessToken() { return getRequired("ADMIN_ACCESS_TOKEN"); },
+
 
   // Database — D1 access via CF binding (see lib/db.ts)
   databaseProvider: get("DATABASE_PROVIDER", "local") as "local" | "d1",

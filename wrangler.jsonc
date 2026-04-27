@@ -1,24 +1,23 @@
 {
-  // Caffè 54 Menu — Cloudflare Pages worker
-  "name": "caffe54-menu",
+  // Caffè 54 Menu — Cloudflare Pages
+  "name": "galeria54",
   "compatibility_date": "2024-12-18",
   "compatibility_flags": ["nodejs_compat"],
 
   // @cloudflare/next-on-pages build output
   "pages_build_output_dir": ".vercel/output/static",
 
-  // ── Cloudflare D1 (database) ────────────────────────────────────────────────
+  // ── Cloudflare D1 ────────────────────────────────────────────────
   "d1_databases": [
     {
       "binding": "caffe54_menu_db",
       "database_name": "caffe54-menu-db",
       "database_id": "996ba79f-6c4b-47e3-80b5-f73bc82a2433",
-      // Local SQLite for `wrangler pages dev`
       "preview_database_id": "local"
     }
   ],
 
-  // ── Cloudflare R2 (image storage) ──────────────────────────────────────────
+  // ── Cloudflare R2 ────────────────────────────────────────────────
   "r2_buckets": [
     {
       "binding": "caffe54_menu_images",
